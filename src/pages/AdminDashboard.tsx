@@ -482,10 +482,18 @@ const AdminDashboard = () => {
                           )}
                           <div>
                             <p className="font-bold text-foreground">{appt.clientName} <span className="text-muted-foreground font-normal text-sm hidden sm:inline-block">- {appt.service}</span></p>
-                            <p className="text-sm text-primary font-medium">
-                              {appt.date.split('-').reverse().join('/')} às {appt.time} <span className="text-muted-foreground font-normal sm:hidden">- {appt.service}</span>
-                              {appt.clientWhatsapp && <span className="text-muted-foreground ml-2">| 📱 {appt.clientWhatsapp}</span>}
-                            </p>
+                            <div className="text-sm text-primary font-medium flex flex-wrap items-center gap-1 mt-0.5">
+                              <span>{appt.date.split('-').reverse().join('/')} às {appt.time}</span>
+                              <span className="text-muted-foreground font-normal sm:hidden">- {appt.service}</span>
+                              {appt.clientWhatsapp && (
+                                <span className="text-muted-foreground flex items-center gap-1">
+                                  <span className="hidden sm:inline">|</span> 📱 {appt.clientWhatsapp}
+                                  <a href={`https://wa.me/55${appt.clientWhatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-bold hover:underline ml-1">
+                                    Chamar no WhatsApp
+                                  </a>
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <Button variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => handleDeleteAppointment(appt.id)}>
@@ -679,7 +687,14 @@ const AdminDashboard = () => {
                     <div key={client.id} className="flex items-center justify-between border-b pb-3">
                       <div>
                         <p className="font-bold">{client.name}</p>
-                        <p className="text-sm text-muted-foreground">{client.phone}</p>
+                        <div className="text-sm text-muted-foreground flex flex-wrap items-center gap-2">
+                          <span>{client.phone}</span>
+                          {client.phone && (
+                            <a href={`https://wa.me/55${client.phone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 font-bold hover:underline text-xs">
+                              Chamar no WhatsApp
+                            </a>
+                          )}
+                        </div>
                         <p className="text-xs text-primary mt-1">Serviços feitos: {client.services.join(", ")}</p>
                       </div>
                       <div className="flex items-center gap-4 text-right">
