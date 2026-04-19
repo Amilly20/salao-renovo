@@ -70,7 +70,7 @@ export const Hero = () => {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <Button asChild variant="luxe" size="xl">
-              <a href="/agendar">Agendar Horário</a>
+              <a href="/agendamento">Agendar Horário</a>
             </Button>
             <Button asChild variant="outlineGold" size="xl">
               <a href="#servicos">Ver Serviços</a>

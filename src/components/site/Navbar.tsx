@@ -58,7 +58,7 @@ export const Navbar = () => {
           {user ? (
             <>
               <Button asChild variant="ghostGold" size="sm">
-                <Link to="/agendar"><User className="h-4 w-4" /> Minha conta</Link>
+                <Link to="/agendamento"><User className="h-4 w-4" /> Minha conta</Link>
               </Button>
               <Button variant="outlineGold" size="sm" onClick={signOut}>
                 <LogOut className="h-4 w-4" /> Sair
@@ -70,7 +70,7 @@ export const Navbar = () => {
                 <Link to="/auth">Entrar</Link>
               </Button>
               <Button asChild variant="luxe" size="default">
-                <Link to="/agendar">Agendar</Link>
+                <Link to="/agendamento">Agendar</Link>
               </Button>
             </>
           )}
@@ -104,7 +104,7 @@ export const Navbar = () => {
               {user ? (
                 <>
                   <Button asChild variant="ghostGold" className="w-full">
-                    <Link to="/agendar" onClick={() => setOpen(false)}>Minha conta</Link>
+                    <Link to="/agendamento" onClick={() => setOpen(false)}>Minha conta</Link>
                   </Button>
                   <Button variant="outlineGold" className="w-full" onClick={() => { signOut(); setOpen(false); }}>
                     Sair
@@ -116,7 +116,7 @@ export const Navbar = () => {
                     <Link to="/auth" onClick={() => setOpen(false)}>Entrar</Link>
                   </Button>
                   <Button asChild variant="luxe" className="w-full">
-                    <Link to="/agendar" onClick={() => setOpen(false)}>Agendar Horário</Link>
+                    <Link to="/agendamento" onClick={() => setOpen(false)}>Agendar Horário</Link>
                   </Button>
                 </>
               )}
