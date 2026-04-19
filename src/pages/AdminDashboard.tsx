@@ -56,6 +56,7 @@ const AdminDashboard = () => {
   const [appointments, setAppointments] = useState<any[]>([]);
   const [isAddingAppointment, setIsAddingAppointment] = useState(false);
   const [apptClientName, setApptClientName] = useState("");
+  const [apptClientWhatsapp, setApptClientWhatsapp] = useState("");
   const [apptDate, setApptDate] = useState("");
   const [apptTime, setApptTime] = useState("");
   const [apptService, setApptService] = useState("");
@@ -231,6 +232,7 @@ const AdminDashboard = () => {
     const newAppt = {
       id: Date.now().toString(),
       clientName: apptClientName,
+      clientWhatsapp: apptClientWhatsapp,
       date: apptDate,
       time: apptTime,
       service: apptService,
@@ -241,7 +243,7 @@ const AdminDashboard = () => {
     set(ref(db, 'salao/appointments'), updated);
     
     setIsAddingAppointment(false);
-    setApptClientName(""); setApptDate(""); setApptTime(""); setApptService("");
+    setApptClientName(""); setApptDate(""); setApptTime(""); setApptService(""); setApptClientWhatsapp("");
     toast({ title: "Agendamento marcado com sucesso!" });
   };
 
@@ -454,6 +456,7 @@ const AdminDashboard = () => {
                     <h4 className="font-bold text-primary">Novo Agendamento Manual</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1"><Label>Nome da Cliente</Label><Input value={apptClientName} onChange={e => setApptClientName(e.target.value)} placeholder="Ex: Maria Silva" /></div>
+                      <div className="space-y-1"><Label>WhatsApp</Label><Input value={apptClientWhatsapp} onChange={e => setApptClientWhatsapp(e.target.value)} placeholder="Ex: (11) 99999-9999" /></div>
                       <div className="space-y-1"><Label>Data</Label><Input type="date" value={apptDate} onChange={e => setApptDate(e.target.value)} /></div>
                       <div className="space-y-1"><Label>Horário</Label><Input type="time" value={apptTime} onChange={e => setApptTime(e.target.value)} /></div>
                       <div className="space-y-1">
@@ -479,7 +482,10 @@ const AdminDashboard = () => {
                           )}
                           <div>
                             <p className="font-bold text-foreground">{appt.clientName} <span className="text-muted-foreground font-normal text-sm hidden sm:inline-block">- {appt.service}</span></p>
-                            <p className="text-sm text-primary font-medium">{appt.date.split('-').reverse().join('/')} às {appt.time} <span className="text-muted-foreground font-normal sm:hidden">- {appt.service}</span></p>
+                            <p className="text-sm text-primary font-medium">
+                              {appt.date.split('-').reverse().join('/')} às {appt.time} <span className="text-muted-foreground font-normal sm:hidden">- {appt.service}</span>
+                              {appt.clientWhatsapp && <span className="text-muted-foreground ml-2">| 📱 {appt.clientWhatsapp}</span>}
+                            </p>
                           </div>
                         </div>
                         <Button variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => handleDeleteAppointment(appt.id)}>

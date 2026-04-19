@@ -24,6 +24,7 @@ const Agendamento = () => {
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horarioSelecionado, setHorarioSelecionado] = useState("");
   const [clienteNome, setClienteNome] = useState(user?.email?.split('@')[0] || "");
+  const [clienteWhatsapp, setClienteWhatsapp] = useState("");
   const [clienteFoto, setClienteFoto] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -65,10 +66,10 @@ const Agendamento = () => {
       return;
     }
 
-    if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado || !clienteNome) {
+    if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado || !clienteNome || !clienteWhatsapp) {
       toast({
         title: "Faltam informações",
-        description: "Por favor, preencha seu nome, selecione o serviço, a data e o horário.",
+        description: "Por favor, preencha seu nome, WhatsApp, selecione o serviço, a data e o horário.",
         variant: "destructive",
       });
       return;
@@ -99,6 +100,7 @@ const Agendamento = () => {
         date: dataSelecionada,
         time: horarioSelecionado,
         service: servicoNome,
+        clientWhatsapp: clienteWhatsapp,
         clientPhoto: clienteFoto
       };
       await set(apptsRef, [...savedAppts, newAppt]);
@@ -185,6 +187,18 @@ const Agendamento = () => {
                 className="flex h-10 w-full md:w-1/2 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={clienteNome}
                 onChange={(e) => setClienteNome(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label htmlFor="whatsapp">WhatsApp para contato</Label>
+              <input
+                type="tel"
+                id="whatsapp"
+                placeholder="(00) 90000-0000"
+                className="flex h-10 w-full md:w-1/2 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={clienteWhatsapp}
+                onChange={(e) => setClienteWhatsapp(e.target.value)}
               />
             </div>
 
