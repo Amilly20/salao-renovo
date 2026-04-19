@@ -64,12 +64,7 @@ export const Gallery = () => {
                 <ChevronRight className="w-6 h-6" />
               </button>
             </>
-          ) : (
-            <div className="text-center py-16 px-4 border-2 border-dashed rounded-xl border-border/50 bg-background/50">
-              <p className="text-lg text-muted-foreground font-medium">Nenhuma foto adicionada ainda.</p>
-              <p className="text-sm text-muted-foreground mt-1">Acesse o Painel da Chefe para adicionar fotos aos seus Trabalhos!</p>
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
     </section>

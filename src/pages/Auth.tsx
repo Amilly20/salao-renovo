@@ -135,7 +135,14 @@ const Auth = () => {
       toast({ title: "Login com Google realizado!" });
       navigate("/", { replace: true });
     } catch (error: any) {
-      toast({ title: "Erro no login com Google", description: error.message, variant: "destructive" });
+      let errorMessage = error.message;
+      if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = "A janela do Google foi fechada antes de concluir o login.";
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = "O link deste site não está autorizado no Firebase. Adicione o domínio nas configurações!";
+      }
+      
+      toast({ title: "Erro no login", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

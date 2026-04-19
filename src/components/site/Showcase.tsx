@@ -58,13 +58,7 @@ export const Showcase = () => {
               </article>
             ))}
           </div>
-        ) : (
-          <div className="mt-16 text-center py-12 px-4 border-2 border-dashed rounded-xl border-border/50 bg-background/50 max-w-2xl mx-auto">
-            <ShoppingBag className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <p className="text-lg text-muted-foreground font-medium">Nossa vitrine está sendo atualizada!</p>
-            <p className="text-sm text-muted-foreground mt-1">Em breve novos produtos maravilhosos para você.</p>
-          </div>
-        )}
+        ) : null}
 
         {/* MODAL DO PRODUTO EXPANDIDO */}
         {selectedProduct && (

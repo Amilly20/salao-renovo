@@ -1,14 +1,8 @@
 import { Instagram, MapPin, Phone, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 
-const fallbackHours = [
-  { id: "1", day: "Ter — Sex", time: "09h — 20h" },
-  { id: "2", day: "Sábado", time: "09h — 18h" },
-  { id: "3", day: "Dom — Seg", time: "Fechado" }
-];
-
 export const Footer = () => {
-  const [hours, setHours] = useState<any[]>(fallbackHours);
+  const [hours, setHours] = useState<any[]>([]);
 
   useEffect(() => {
     const savedHours = localStorage.getItem('@salaorenovo:hours');
@@ -60,6 +54,9 @@ export const Footer = () => {
               {hours.map(h => (
                 <li key={h.id} className="flex justify-between"><span>{h.day}</span><span>{h.time}</span></li>
               ))}
+              {hours.length === 0 && (
+                <li className="text-muted-foreground italic">Horários não cadastrados</li>
+              )}
             </ul>
             <a
               href="https://www.instagram.com/salaorenovoo/"

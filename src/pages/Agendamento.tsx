@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Scissors, Calendar as CalendarIcon, Clock } from "lucide-react";
-
-// Lista de fallback caso a adm ainda não tenha cadastrado nada
-const fallbackServicos = [
-  { id: "corte-fem", nome: "Corte Feminino", preco: "R$ 80,00", duracao: "60 min" },
-  { id: "coloracao", nome: "Coloração", preco: "R$ 150,00", duracao: "120 min" },
-];
+import { Scissors, Calendar as CalendarIcon, Clock, Image as ImageIcon } from "lucide-react";
 
 // Horários de exemplo
 const horariosDisponiveis = [
@@ -23,11 +17,21 @@ const Agendamento = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [servicosDisponiveis, setServicosDisponiveis] = useState<any[]>(fallbackServicos);
+  const [servicosDisponiveis, setServicosDisponiveis] = useState<any[]>([]);
   const [servicoSelecionado, setServicoSelecionado] = useState("");
   const [dataSelecionada, setDataSelecionada] = useState("");
   const [horarioSelecionado, setHorarioSelecionado] = useState("");
+  const [clienteNome, setClienteNome] = useState(user?.email?.split('@')[0] || "");
+  const [clienteFoto, setClienteFoto] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => setClienteFoto(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
   useEffect(() => {
     // Busca os serviços que a adm cadastrou no painel
@@ -60,10 +64,10 @@ const Agendamento = () => {
       return;
     }
 
-    if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado) {
+    if (!servicoSelecionado || !dataSelecionada || !horarioSelecionado || !clienteNome) {
       toast({
         title: "Faltam informações",
-        description: "Por favor, selecione o serviço, a data e o horário desejado.",
+        description: "Por favor, preencha seu nome, selecione o serviço, a data e o horário.",
         variant: "destructive",
       });
       return;
@@ -71,7 +75,22 @@ const Agendamento = () => {
 
     setLoading(true);
     
-    // Simulação de salvamento no banco de dados
+    // Pega o nome do serviço para salvar no painel da Adm
+    const servicoObj = servicosDisponiveis.find(s => s.id === servicoSelecionado);
+    const servicoNome = servicoObj ? servicoObj.nome : "Serviço";
+
+    // Salvando de verdade para aparecer no Painel da Chefe
+    const savedAppts = JSON.parse(localStorage.getItem('@salaorenovo:appointments') || '[]');
+    const newAppt = {
+      id: Date.now().toString(),
+      clientName: clienteNome,
+      date: dataSelecionada,
+      time: horarioSelecionado,
+      service: servicoNome,
+      clientPhoto: clienteFoto
+    };
+    localStorage.setItem('@salaorenovo:appointments', JSON.stringify([...savedAppts, newAppt]));
+
     setTimeout(() => {
       setLoading(false);
       toast({
@@ -98,29 +117,33 @@ const Agendamento = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {servicosDisponiveis.map((servico) => (
-              <button
-                key={servico.id}
-                type="button"
-                onClick={() => setServicoSelecionado(servico.id)}
-                className={`p-4 rounded-xl border-2 text-left flex gap-4 transition-all duration-200 ${
-                  servicoSelecionado === servico.id
-                    ? "border-primary bg-primary/10 shadow-sm"
-                    : "border-border hover:border-primary/40 hover:bg-muted/50"
-                }`}
-              >
-                {servico.image && (
-                  <img src={servico.image} alt={servico.nome} className="w-16 h-16 rounded-md object-cover border shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-foreground truncate">{servico.nome}</div>
-                  <div className="text-sm text-muted-foreground flex flex-col mt-1">
-                    <span className="font-medium text-primary">{servico.preco}</span>
-                    {servico.duracao && <span>~ {servico.duracao}</span>}
+            {servicosDisponiveis.length > 0 ? (
+              servicosDisponiveis.map((servico) => (
+                <button
+                  key={servico.id}
+                  type="button"
+                  onClick={() => setServicoSelecionado(servico.id)}
+                  className={`p-4 rounded-xl border-2 text-left flex gap-4 transition-all duration-200 ${
+                    servicoSelecionado === servico.id
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border hover:border-primary/40 hover:bg-muted/50"
+                  }`}
+                >
+                  {servico.image && (
+                    <img src={servico.image} alt={servico.nome} className="w-16 h-16 rounded-md object-cover border shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-foreground truncate">{servico.nome}</div>
+                    <div className="text-sm text-muted-foreground flex flex-col mt-1">
+                      <span className="font-medium text-primary">{servico.preco}</span>
+                      {servico.duracao && <span>~ {servico.duracao}</span>}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))
+            ) : (
+              <p className="col-span-full text-center text-muted-foreground py-4">Nenhum serviço disponível no momento.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -129,11 +152,23 @@ const Agendamento = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <CalendarIcon className="w-5 h-5 text-primary" />
-                2. Data e Horário
+              2. Seus Dados, Data e Horário
               </CardTitle>
               <CardDescription>Para quando deseja agendar?</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="nome">Seu Nome / Apelido</Label>
+              <input
+                type="text"
+                id="nome"
+                placeholder="Como devemos te chamar?"
+                className="flex h-10 w-full md:w-1/2 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={clienteNome}
+                onChange={(e) => setClienteNome(e.target.value)}
+              />
+            </div>
+
               <div className="space-y-3">
                 <Label htmlFor="data">Data Desejada</Label>
                 <input
@@ -157,6 +192,24 @@ const Agendamento = () => {
                   ))}
                 </div>
               </div>
+
+            <div className="space-y-3 border-t border-border/50 pt-6">
+              <Label className="flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Foto de Referência (Opcional)</Label>
+              <p className="text-sm text-muted-foreground">Viu algum corte ou unha que gostou? Mande a foto para nós!</p>
+              <div className="flex items-center gap-4">
+                <Label htmlFor="client-photo-upload" className="cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md font-medium transition-colors text-sm">
+                  {clienteFoto ? "Trocar Foto" : "Escolher Imagem"}
+                </Label>
+                <input
+                  id="client-photo-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
+                />
+                {clienteFoto && <img src={clienteFoto} alt="Preview" className="w-12 h-12 object-cover rounded-md border" />}
+              </div>
+            </div>
             </CardContent>
           </Card>
 

@@ -31,9 +31,7 @@ const AdminDashboard = () => {
   const [galleryPhotos, setGalleryPhotos] = useState<string[]>([]);
   
   // Estado para os Serviços e Produtos
-  const [services, setServices] = useState<any[]>([
-    { id: "1", name: "Corte Feminino", price: "80,00", duration: "60 min", image: "" }
-  ]);
+  const [services, setServices] = useState<any[]>([]);
   const [isEditingService, setIsEditingService] = useState(false);
   const [editingSvcId, setEditingSvcId] = useState<string | null>(null);
   const [svcName, setSvcName] = useState("");
@@ -77,11 +75,7 @@ const AdminDashboard = () => {
   const [newHistoryValue, setNewHistoryValue] = useState("");
 
   // Estado para Configurações (Horários)
-  const [businessHours, setBusinessHours] = useState<any[]>([
-    { id: "1", day: "Ter — Sex", time: "09h — 20h" },
-    { id: "2", day: "Sábado", time: "09h — 18h" },
-    { id: "3", day: "Dom — Seg", time: "Fechado" }
-  ]);
+  const [businessHours, setBusinessHours] = useState<any[]>([]);
 
   useEffect(() => {
     const fotosSalvas = localStorage.getItem('@salaorenovo:gallery');
@@ -482,9 +476,14 @@ const AdminDashboard = () => {
                   <div className="space-y-3">
                     {appointments.length > 0 ? appointments.map(appt => (
                       <div key={appt.id} className="flex items-center justify-between bg-background border p-4 rounded-lg">
-                        <div>
-                          <p className="font-bold text-foreground">{appt.clientName} <span className="text-muted-foreground font-normal text-sm hidden sm:inline-block">- {appt.service}</span></p>
-                          <p className="text-sm text-primary font-medium">{appt.date.split('-').reverse().join('/')} às {appt.time} <span className="text-muted-foreground font-normal sm:hidden">- {appt.service}</span></p>
+                        <div className="flex items-center gap-4">
+                          {appt.clientPhoto && (
+                            <img src={appt.clientPhoto} alt="Referência" className="w-12 h-12 rounded-md object-cover border shrink-0" />
+                          )}
+                          <div>
+                            <p className="font-bold text-foreground">{appt.clientName} <span className="text-muted-foreground font-normal text-sm hidden sm:inline-block">- {appt.service}</span></p>
+                            <p className="text-sm text-primary font-medium">{appt.date.split('-').reverse().join('/')} às {appt.time} <span className="text-muted-foreground font-normal sm:hidden">- {appt.service}</span></p>
+                          </div>
                         </div>
                         <Button variant="ghost" size="icon" className="text-destructive shrink-0" onClick={() => handleDeleteAppointment(appt.id)}>
                           <Trash2 className="w-4 h-4" />
