@@ -8,6 +8,7 @@ import Index from "./pages/Index.tsx";
 import Auth from "./pages/Auth.tsx";
 import Agendamento from "./pages/Agendamento.tsx";
 import AdminDashboard from "./pages/AdminDashboard.tsx";
+import Perfil from "./pages/Perfil.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/agendamento" element={<Agendamento />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/perfil" element={<Perfil />} />
             {/* Redireciona links antigos para a página certa automaticamente */}
             <Route path="/agendar" element={<Navigate to="/agendamento" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

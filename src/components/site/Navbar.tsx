@@ -57,8 +57,11 @@ export const Navbar = () => {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
+              <Button asChild variant="luxe" size="sm">
+                <Link to="/agendamento">Agendar</Link>
+              </Button>
               <Button asChild variant="ghostGold" size="sm">
-                <Link to="/agendamento"><User className="h-4 w-4" /> Minha conta</Link>
+                <Link to="/perfil"><User className="h-4 w-4" /> Minha conta</Link>
               </Button>
               <Button variant="outlineGold" size="sm" onClick={signOut}>
                 <LogOut className="h-4 w-4" /> Sair
@@ -103,8 +106,11 @@ export const Navbar = () => {
             <li className="pt-2 space-y-2">
               {user ? (
                 <>
+                  <Button asChild variant="luxe" className="w-full">
+                    <Link to="/agendamento" onClick={() => setOpen(false)}>Agendar Horário</Link>
+                  </Button>
                   <Button asChild variant="ghostGold" className="w-full">
-                    <Link to="/agendamento" onClick={() => setOpen(false)}>Minha conta</Link>
+                    <Link to="/perfil" onClick={() => setOpen(false)}>Minha conta</Link>
                   </Button>
                   <Button variant="outlineGold" className="w-full" onClick={() => { signOut(); setOpen(false); }}>
                     Sair
