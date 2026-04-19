@@ -92,8 +92,13 @@ const AdminDashboard = () => {
 
     const unsubscribes = refs.map(({ path, setter }) => {
       return onValue(ref(db, path), (snapshot) => {
-        if (snapshot.exists()) setter(snapshot.val() || []);
-        else setter([]);
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const dataArray = Array.isArray(data) ? data : Object.values(data);
+          setter(dataArray.filter(Boolean));
+        } else {
+          setter([]);
+        }
       });
     });
 

@@ -80,29 +80,44 @@ const Agendamento = () => {
     const servicoObj = servicosDisponiveis.find(s => s.id === servicoSelecionado);
     const servicoNome = servicoObj ? servicoObj.nome : "Serviço";
 
-    // Salvando de verdade para aparecer no Painel da Chefe
-    const apptsRef = ref(db, 'salao/appointments');
-    const snapshot = await get(apptsRef);
-    const savedAppts = snapshot.exists() ? snapshot.val() : [];
-
-    const newAppt = {
-      id: Date.now().toString(),
-      clientName: clienteNome,
-      date: dataSelecionada,
-      time: horarioSelecionado,
-      service: servicoNome,
-      clientPhoto: clienteFoto
-    };
-    await set(apptsRef, [...savedAppts, newAppt]);
-
-    setTimeout(() => {
+    try {
+      // Salvando de verdade para aparecer no Painel da Chefe
+      const apptsRef = ref(db, 'salao/appointments');
+      const snapshot = await get(apptsRef);
+      
+      let savedAppts: any[] = [];
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Garante que seja sempre um array (o Firebase às vezes converte listas em objetos)
+        savedAppts = Array.isArray(data) ? data : Object.values(data);
+        savedAppts = savedAppts.filter(Boolean);
+      }
+  
+      const newAppt = {
+        id: Date.now().toString(),
+        clientName: clienteNome,
+        date: dataSelecionada,
+        time: horarioSelecionado,
+        service: servicoNome,
+        clientPhoto: clienteFoto
+      };
+      await set(apptsRef, [...savedAppts, newAppt]);
+  
       setLoading(false);
       toast({
         title: "Agendamento Confirmado! 🎉",
         description: `Seu horário foi marcado para ${dataSelecionada.split('-').reverse().join('/')} às ${horarioSelecionado}.`,
       });
       navigate("/"); // Volta para a página inicial após o sucesso
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+      toast({
+        title: "Erro ao salvar",
+        description: "Verifique se as Regras do Firebase estão liberadas!",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
