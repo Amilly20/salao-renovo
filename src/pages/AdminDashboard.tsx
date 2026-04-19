@@ -6,6 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { db } from "@/lib/firebase";
+import { ref, onValue, set } from "firebase/database";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -78,34 +80,24 @@ const AdminDashboard = () => {
   const [businessHours, setBusinessHours] = useState<any[]>([]);
 
   useEffect(() => {
-    const fotosSalvas = localStorage.getItem('@salaorenovo:gallery');
-    if (fotosSalvas) {
-      setGalleryPhotos(JSON.parse(fotosSalvas));
-    }
-    const savedServices = localStorage.getItem('@salaorenovo:services');
-    if (savedServices) {
-      setServices(JSON.parse(savedServices));
-    }
-    const savedAppts = localStorage.getItem('@salaorenovo:appointments');
-    if (savedAppts) {
-      setAppointments(JSON.parse(savedAppts));
-    }
-    const savedClients = localStorage.getItem('@salaorenovo:clients');
-    if (savedClients) {
-      setClients(JSON.parse(savedClients));
-    }
-    const savedHistory = localStorage.getItem('@salaorenovo:history');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
-    const savedVitrine = localStorage.getItem('@salaorenovo:vitrine');
-    if (savedVitrine) {
-      setVitrine(JSON.parse(savedVitrine));
-    }
-    const savedHours = localStorage.getItem('@salaorenovo:hours');
-    if (savedHours) {
-      setBusinessHours(JSON.parse(savedHours));
-    }
+    const refs = [
+      { path: 'salao/gallery', setter: setGalleryPhotos },
+      { path: 'salao/services', setter: setServices },
+      { path: 'salao/appointments', setter: setAppointments },
+      { path: 'salao/clients', setter: setClients },
+      { path: 'salao/history', setter: setHistory },
+      { path: 'salao/vitrine', setter: setVitrine },
+      { path: 'salao/hours', setter: setBusinessHours },
+    ];
+
+    const unsubscribes = refs.map(({ path, setter }) => {
+      return onValue(ref(db, path), (snapshot) => {
+        if (snapshot.exists()) setter(snapshot.val() || []);
+        else setter([]);
+      });
+    });
+
+    return () => unsubscribes.forEach(unsub => unsub());
   }, []);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +111,7 @@ const AdminDashboard = () => {
       
       try {
         setGalleryPhotos(updated);
-        localStorage.setItem('@salaorenovo:gallery', JSON.stringify(updated));
+        set(ref(db, 'salao/gallery'), updated);
         toast({ title: "Foto adicionada", description: "A foto já está aparecendo no site!" });
       } catch (err) {
         toast({ title: "Erro de armazenamento", description: "A imagem é muito pesada ou o espaço do navegador acabou.", variant: "destructive" });
@@ -160,7 +152,7 @@ const AdminDashboard = () => {
     }
     
     setServices(updated);
-    localStorage.setItem('@salaorenovo:services', JSON.stringify(updated));
+    set(ref(db, 'salao/services'), updated);
     setIsEditingService(false);
     toast({ title: "Serviço salvo com sucesso!" });
   };
@@ -169,7 +161,7 @@ const AdminDashboard = () => {
     if (window.confirm("Tem certeza que deseja excluir este serviço? Ele não aparecerá mais para as clientes.")) {
       const updated = services.filter(s => s.id !== id);
       setServices(updated);
-      localStorage.setItem('@salaorenovo:services', JSON.stringify(updated));
+      set(ref(db, 'salao/services'), updated);
       toast({ title: "Removido com sucesso!" });
     }
   };
@@ -204,7 +196,7 @@ const AdminDashboard = () => {
       updated = [...vitrine, { id: Date.now().toString(), name: vitrineName, brand: vitrineBrand, price: vitrinePrice, image: vitrineImage, stock: vitrineStock, description: vitrineDesc }];
     }
     setVitrine(updated);
-    localStorage.setItem('@salaorenovo:vitrine', JSON.stringify(updated));
+    set(ref(db, 'salao/vitrine'), updated);
     setIsEditingVitrine(false);
     toast({ title: "Produto salvo na Vitrine!" });
   };
@@ -213,7 +205,7 @@ const AdminDashboard = () => {
     if (window.confirm("Excluir este produto da Vitrine?")) {
       const updated = vitrine.filter(p => p.id !== id);
       setVitrine(updated);
-      localStorage.setItem('@salaorenovo:vitrine', JSON.stringify(updated));
+      set(ref(db, 'salao/vitrine'), updated);
       toast({ title: "Produto removido!" });
     }
   };
@@ -221,7 +213,7 @@ const AdminDashboard = () => {
   const handleRemovePhoto = (index: number) => {
     const updated = galleryPhotos.filter((_, i) => i !== index);
     setGalleryPhotos(updated);
-    localStorage.setItem('@salaorenovo:gallery', JSON.stringify(updated));
+    set(ref(db, 'salao/gallery'), updated);
     toast({ title: "Foto removida" });
   };
 
@@ -241,7 +233,7 @@ const AdminDashboard = () => {
     
     const updated = [...appointments, newAppt];
     setAppointments(updated);
-    localStorage.setItem('@salaorenovo:appointments', JSON.stringify(updated));
+    set(ref(db, 'salao/appointments'), updated);
     
     setIsAddingAppointment(false);
     setApptClientName(""); setApptDate(""); setApptTime(""); setApptService("");
@@ -252,7 +244,7 @@ const AdminDashboard = () => {
     if (window.confirm("Deseja cancelar e apagar este agendamento?")) {
       const updated = appointments.filter(a => a.id !== id);
       setAppointments(updated);
-      localStorage.setItem('@salaorenovo:appointments', JSON.stringify(updated));
+      set(ref(db, 'salao/appointments'), updated);
       toast({ title: "Agendamento cancelado!" });
     }
   };
@@ -268,7 +260,7 @@ const AdminDashboard = () => {
       services: newClientServices ? newClientServices.split(',').map(s => s.trim()) : []
     }];
     setClients(updated);
-    localStorage.setItem('@salaorenovo:clients', JSON.stringify(updated));
+    set(ref(db, 'salao/clients'), updated);
     setIsAddingClient(false);
     setNewClientName(""); setNewClientPhone(""); setNewClientDebt(""); setNewClientServices("");
     toast({ title: "Cliente adicionado!" });
@@ -291,7 +283,7 @@ const AdminDashboard = () => {
     else updated.unshift({ month: monthLabel, items: [newItem] });
     
     setHistory(updated);
-    localStorage.setItem('@salaorenovo:history', JSON.stringify(updated));
+    set(ref(db, 'salao/history'), updated);
     setIsAddingHistory(false);
     setNewHistoryClient(""); setNewHistoryService(""); setNewHistoryDate(""); setNewHistoryValue("");
     toast({ title: "Trabalho salvo no histórico!" });
@@ -300,7 +292,7 @@ const AdminDashboard = () => {
   const handleMarkAsPaid = (id: string) => {
     const updated = clients.map(c => c.id === id ? { ...c, debt: "0,00" } : c);
     setClients(updated);
-    localStorage.setItem('@salaorenovo:clients', JSON.stringify(updated));
+    set(ref(db, 'salao/clients'), updated);
     toast({ title: "Dívida quitada", description: "O cliente não deve mais nada!" });
   };
 
@@ -308,7 +300,7 @@ const AdminDashboard = () => {
     if (window.confirm("Tem certeza que deseja excluir este cliente?")) {
       const updated = clients.filter(c => c.id !== id);
       setClients(updated);
-      localStorage.setItem('@salaorenovo:clients', JSON.stringify(updated));
+      set(ref(db, 'salao/clients'), updated);
       toast({ title: "Cliente removido!" });
     }
   };
@@ -319,7 +311,7 @@ const AdminDashboard = () => {
       updated[monthIndex].items = updated[monthIndex].items.filter((i: any) => i.id !== itemId);
       if (updated[monthIndex].items.length === 0) updated.splice(monthIndex, 1);
       setHistory(updated);
-      localStorage.setItem('@salaorenovo:history', JSON.stringify(updated));
+      set(ref(db, 'salao/history'), updated);
       toast({ title: "Registro apagado!" });
     }
   };
@@ -504,7 +496,7 @@ const AdminDashboard = () => {
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
                   <CardTitle>Editar Serviços e Preços</CardTitle>
-                  <CardDescription>Cadastre cortes, unhas ou produtos que você vende no salão.</CardDescription>
+                  <CardDescription>Cadastre cortes, tratamentos ou produtos que você vende no salão.</CardDescription>
                 </div>
                 {!isEditingService && (
                   <Button size="sm" onClick={startAddingService}><Plus className="w-4 h-4 mr-1"/> Adicionar Serviço</Button>
@@ -662,7 +654,7 @@ const AdminDashboard = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1"><Label>Nome</Label><Input value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="Ex: Ana Silva" /></div>
                       <div className="space-y-1"><Label>Telefone</Label><Input value={newClientPhone} onChange={e => setNewClientPhone(e.target.value)} placeholder="Ex: (11) 99999-9999" /></div>
-                      <div className="space-y-1"><Label>Serviços Recorrentes</Label><Input value={newClientServices} onChange={e => setNewClientServices(e.target.value)} placeholder="Ex: Corte, Unha" /></div>
+                      <div className="space-y-1"><Label>Serviços Recorrentes</Label><Input value={newClientServices} onChange={e => setNewClientServices(e.target.value)} placeholder="Ex: Corte, Coloração" /></div>
                       <div className="space-y-1"><Label>Está devendo? (R$)</Label><Input value={newClientDebt} onChange={e => setNewClientDebt(e.target.value)} placeholder="Ex: 50,00 (Deixe em branco se não dever)" /></div>
                     </div>
                     <div className="flex gap-2 justify-end mt-4 pt-2 border-t border-border/50">
@@ -833,7 +825,7 @@ const AdminDashboard = () => {
                 <div className="flex gap-2 mt-4 pt-2 border-t border-border/50 justify-end">
                   <Button variant="outline" onClick={() => setBusinessHours([...businessHours, { id: Date.now().toString(), day: "", time: "" }])}>+ Linha de Horário</Button>
                   <Button onClick={() => {
-                    localStorage.setItem('@salaorenovo:hours', JSON.stringify(businessHours));
+                    set(ref(db, 'salao/hours'), businessHours);
                     toast({ title: "Horários atualizados no site!" });
                   }}>Salvar Horários</Button>
                 </div>

@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, X } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
 
 export const Showcase = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
 
   useEffect(() => {
-    // Busca a Vitrine salva pela administradora no Painel
-    const saved = localStorage.getItem('@salaorenovo:vitrine');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length > 0) {
-        setProducts(parsed);
-      }
-    }
+    const unsubscribe = onValue(ref(db, 'salao/vitrine'), (snapshot) => {
+      if (snapshot.exists()) setProducts(snapshot.val() || []);
+      else setProducts([]);
+    });
+    return () => unsubscribe();
   }, []);
 
   return (

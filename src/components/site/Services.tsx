@@ -1,26 +1,27 @@
 import { useEffect, useState } from "react";
 import { Scissors, X } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
 
 export const Services = () => {
   const [displayServices, setDisplayServices] = useState<any[]>([]);
   const [selectedService, setSelectedService] = useState<any | null>(null);
 
   useEffect(() => {
-    // Busca os serviços que a administradora salvou no painel
-    const saved = localStorage.getItem('@salaorenovo:services');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length > 0) {
+    const unsubscribe = onValue(ref(db, 'salao/services'), (snapshot) => {
+      if (snapshot.exists()) {
+        const parsed = snapshot.val() || [];
         setDisplayServices(parsed.map((s: any) => ({
           id: s.id,
           title: s.name,
           desc: s.duration ? `Duração estimada: ${s.duration}` : "Serviço profissional de alta qualidade.",
           price: s.price.includes('R$') ? s.price : `R$ ${s.price}`,
           image: s.image,
-          icon: Scissors // Ícone padrão caso não tenha foto
+          icon: Scissors
         })));
-      }
-    }
+      } else setDisplayServices([]);
+    });
+    return () => unsubscribe();
   }, []);
 
   return (

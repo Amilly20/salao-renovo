@@ -1,14 +1,17 @@
 import { Instagram, MapPin, Phone, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
 
 export const Footer = () => {
   const [hours, setHours] = useState<any[]>([]);
 
   useEffect(() => {
-    const savedHours = localStorage.getItem('@salaorenovo:hours');
-    if (savedHours) {
-      setHours(JSON.parse(savedHours));
-    }
+    const unsubscribe = onValue(ref(db, 'salao/hours'), (snapshot) => {
+      if (snapshot.exists()) setHours(snapshot.val() || []);
+      else setHours([]);
+    });
+    return () => unsubscribe();
   }, []);
 
   return (

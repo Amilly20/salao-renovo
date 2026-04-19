@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { db } from "@/lib/firebase";
+import { ref, onValue, get, set } from "firebase/database";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -34,11 +36,9 @@ const Agendamento = () => {
   };
 
   useEffect(() => {
-    // Busca os serviços que a adm cadastrou no painel
-    const saved = localStorage.getItem('@salaorenovo:services');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.length > 0) {
+    const unsubscribe = onValue(ref(db, 'salao/services'), (snapshot) => {
+      if (snapshot.exists()) {
+        const parsed = snapshot.val() || [];
         setServicosDisponiveis(parsed.map((s: any) => ({
           id: s.id,
           nome: s.name,
@@ -46,8 +46,9 @@ const Agendamento = () => {
           duracao: s.duration,
           image: s.image
         })));
-      }
-    }
+      } else setServicosDisponiveis([]);
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleAgendar = async (e: React.FormEvent) => {
@@ -80,7 +81,10 @@ const Agendamento = () => {
     const servicoNome = servicoObj ? servicoObj.nome : "Serviço";
 
     // Salvando de verdade para aparecer no Painel da Chefe
-    const savedAppts = JSON.parse(localStorage.getItem('@salaorenovo:appointments') || '[]');
+    const apptsRef = ref(db, 'salao/appointments');
+    const snapshot = await get(apptsRef);
+    const savedAppts = snapshot.exists() ? snapshot.val() : [];
+
     const newAppt = {
       id: Date.now().toString(),
       clientName: clienteNome,
@@ -89,7 +93,7 @@ const Agendamento = () => {
       service: servicoNome,
       clientPhoto: clienteFoto
     };
-    localStorage.setItem('@salaorenovo:appointments', JSON.stringify([...savedAppts, newAppt]));
+    await set(apptsRef, [...savedAppts, newAppt]);
 
     setTimeout(() => {
       setLoading(false);
@@ -195,7 +199,7 @@ const Agendamento = () => {
 
             <div className="space-y-3 border-t border-border/50 pt-6">
               <Label className="flex items-center gap-2"><ImageIcon className="w-4 h-4" /> Foto de Referência (Opcional)</Label>
-              <p className="text-sm text-muted-foreground">Viu algum corte ou unha que gostou? Mande a foto para nós!</p>
+              <p className="text-sm text-muted-foreground">Viu algum corte ou cor que gostou? Mande a foto para nós!</p>
               <div className="flex items-center gap-4">
                 <Label htmlFor="client-photo-upload" className="cursor-pointer bg-secondary text-secondary-foreground hover:bg-secondary/80 px-4 py-2 rounded-md font-medium transition-colors text-sm">
                   {clienteFoto ? "Trocar Foto" : "Escolher Imagem"}

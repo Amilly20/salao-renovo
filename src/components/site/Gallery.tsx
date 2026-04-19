@@ -1,17 +1,19 @@
 import useEmblaCarousel from 'embla-carousel-react';
 import { useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { db } from "@/lib/firebase";
+import { ref, onValue } from "firebase/database";
 
 export const Gallery = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "start" });
   const [fotos, setFotos] = useState<string[]>([]);
 
   useEffect(() => {
-    // Busca as fotos que a administradora salvou no painel
-    const fotosSalvas = localStorage.getItem('@salaorenovo:gallery');
-    if (fotosSalvas) {
-      setFotos(JSON.parse(fotosSalvas));
-    }
+    const unsubscribe = onValue(ref(db, 'salao/gallery'), (snapshot) => {
+      if (snapshot.exists()) setFotos(snapshot.val() || []);
+      else setFotos([]);
+    });
+    return () => unsubscribe();
   }, []);
 
   const rolarParaAnterior = useCallback(() => {
